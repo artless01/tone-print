@@ -14,6 +14,14 @@ Logic Pro loads Audio Unit plugins, so the macOS target is an AU `.component`. T
 - Drift Rate: modulation speed.
 - Width: stereo spread for the wet path.
 - Mix: dry/wet blend.
+- Verb Mix: amount of drift-fed reverb bloom.
+- Decay: reverb tail length.
+- Size: reverb tank spread.
+- Damping: darker to brighter tail absorption.
+- PreDelay: space before the reverb bloom arrives.
+- Shimmer: octave-like shimmer feed into the reverb tank.
+- Shimmer Tone: darker to brighter shimmer voice.
+- Drift Send: how much of the drift/slap path feeds the reverb.
 - Output: final level trim.
 
 ## Local DSP Test

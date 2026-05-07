@@ -1,8 +1,8 @@
 #include "dsp/ToneprintDSP.h"
 
-#include <array>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 int main()
 {
@@ -12,10 +12,14 @@ int main()
     toneprint::Parameters params;
     params.driveDb = 12.0f;
     params.mix = 0.5f;
+    params.verbMix = 0.7f;
+    params.verbDecay = 0.88f;
+    params.shimmer = 0.55f;
+    params.driftSend = 0.8f;
     processor.setParameters(params);
 
-    std::array<float, 1024> left {};
-    std::array<float, 1024> right {};
+    std::vector<float> left(96000, 0.0f);
+    std::vector<float> right(96000, 0.0f);
     left[0] = 0.8f;
     right[0] = -0.5f;
 

@@ -28,6 +28,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "mix", "Mix", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.34f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "verbMix", "Verb Mix", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "verbDecay", "Decay", juce::NormalisableRange<float>(0.0f, 0.98f, 0.001f), 0.72f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "verbSize", "Size", juce::NormalisableRange<float>(0.25f, 1.35f, 0.001f), 0.68f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "verbDamping", "Damping", juce::NormalisableRange<float>(0.0f, 0.98f, 0.001f), 0.46f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "preDelay", "PreDelay", juce::NormalisableRange<float>(0.0f, 220.0f, 0.01f), 24.0f, ms));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "shimmer", "Shimmer", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "shimmerTone", "Shimmer Tone", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.64f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "driftSend", "Drift Send", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.65f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "output", "Output", juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), -1.5f, db));
 
     return { params.begin(), params.end() };
@@ -48,7 +64,7 @@ public:
     bool acceptsMidi() const override { return false; }
     bool producesMidi() const override { return false; }
     bool isMidiEffect() const override { return false; }
-    double getTailLengthSeconds() const override { return 2.0; }
+    double getTailLengthSeconds() const override { return 8.0; }
 
     int getNumPrograms() override { return 1; }
     int getCurrentProgram() override { return 0; }
@@ -88,6 +104,14 @@ public:
         values.modRateHz = parameters.getRawParameterValue("modRate")->load();
         values.width = parameters.getRawParameterValue("width")->load();
         values.mix = parameters.getRawParameterValue("mix")->load();
+        values.verbMix = parameters.getRawParameterValue("verbMix")->load();
+        values.verbDecay = parameters.getRawParameterValue("verbDecay")->load();
+        values.verbSize = parameters.getRawParameterValue("verbSize")->load();
+        values.verbDamping = parameters.getRawParameterValue("verbDamping")->load();
+        values.preDelayMs = parameters.getRawParameterValue("preDelay")->load();
+        values.shimmer = parameters.getRawParameterValue("shimmer")->load();
+        values.shimmerTone = parameters.getRawParameterValue("shimmerTone")->load();
+        values.driftSend = parameters.getRawParameterValue("driftSend")->load();
         values.outputDb = parameters.getRawParameterValue("output")->load();
         dsp.setParameters(values);
 
