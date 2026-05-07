@@ -81,7 +81,7 @@ float Processor::readDelay(int channel, float delaySamples) const
         + line[static_cast<std::size_t>(index1)] * fraction;
 }
 
-void Processor::process(float** channels, int channelCount, int sampleCount)
+void Processor::process(float* const* channels, int channelCount, int sampleCount)
 {
     if (channels == nullptr || channelCount <= 0 || sampleCount <= 0 || delayLines.empty())
         return;

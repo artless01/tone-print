@@ -24,7 +24,7 @@ public:
     void prepare(double sampleRate, int maxBlockSize, int channelCount);
     void reset();
     void setParameters(const Parameters& newParameters);
-    void process(float** channels, int channelCount, int sampleCount);
+    void process(float* const* channels, int channelCount, int sampleCount);
 
 private:
     float processTone(int channel, float input);
