@@ -1,0 +1,12 @@
+build*/
+cmake-build-*/
+DerivedData/
+.DS_Store
+*.xcodeproj/
+*.xcworkspace/
+*.component/
+*.vst3/
+*.appex/
+*.a
+*.o
+*.dSYM/
