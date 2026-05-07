@@ -7,24 +7,28 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
+    const auto db = juce::AudioParameterFloatAttributes().withLabel("dB");
+    const auto ms = juce::AudioParameterFloatAttributes().withLabel("ms");
+    const auto hz = juce::AudioParameterFloatAttributes().withLabel("Hz");
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "drive", "Drive", juce::NormalisableRange<float>(0.0f, 24.0f, 0.01f), 9.0f, "dB"));
+        "drive", "Drive", juce::NormalisableRange<float>(0.0f, 24.0f, 0.01f), 9.0f, db));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "tone", "Tone", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.62f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "delay", "Slap", juce::NormalisableRange<float>(20.0f, 220.0f, 0.01f), 82.0f, "ms"));
+        "delay", "Slap", juce::NormalisableRange<float>(20.0f, 220.0f, 0.01f), 82.0f, ms));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "feedback", "Feedback", juce::NormalisableRange<float>(0.0f, 0.75f, 0.001f), 0.18f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "modDepth", "Drift", juce::NormalisableRange<float>(0.0f, 12.0f, 0.01f), 2.5f, "ms"));
+        "modDepth", "Drift", juce::NormalisableRange<float>(0.0f, 12.0f, 0.01f), 2.5f, ms));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "modRate", "Drift Rate", juce::NormalisableRange<float>(0.03f, 2.0f, 0.001f), 0.33f, "Hz"));
+        "modRate", "Drift Rate", juce::NormalisableRange<float>(0.03f, 2.0f, 0.001f), 0.33f, hz));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "width", "Width", juce::NormalisableRange<float>(0.0f, 1.5f, 0.001f), 1.08f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "mix", "Mix", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.34f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "output", "Output", juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), -1.5f, "dB"));
+        "output", "Output", juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), -1.5f, db));
 
     return { params.begin(), params.end() };
 }
