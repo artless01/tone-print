@@ -12,6 +12,8 @@ juce_add_plugin(NickToneprint
     PRODUCT_NAME "Nick Toneprint"
 )
 
+juce_generate_juce_header(NickToneprint)
+
 target_sources(NickToneprint PRIVATE
     JucePlugin.cpp
 )
