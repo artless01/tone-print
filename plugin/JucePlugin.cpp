@@ -1,4 +1,6 @@
+#include <array>
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 #include "dsp/ToneprintDSP.h"
 
 namespace
@@ -119,10 +121,9 @@ public:
     }
 
     bool hasEditor() const override { return true; }
-    juce::AudioProcessorEditor* createEditor() override
-    {
-        return new juce::GenericAudioProcessorEditor(*this);
-    }
+    juce::AudioProcessorEditor* createEditor() override;
+
+    juce::AudioProcessorValueTreeState& getParameters() { return parameters; }
 
     void getStateInformation(juce::MemoryBlock& destData) override
     {
@@ -141,6 +142,130 @@ private:
     toneprint::Processor dsp;
     juce::AudioProcessorValueTreeState parameters;
 };
+
+class KnobControl final : public juce::Component
+{
+public:
+    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+
+    KnobControl(juce::AudioProcessorValueTreeState& parameters,
+                const juce::String& parameterId,
+                const juce::String& name)
+        : attachment(parameters, parameterId, slider)
+    {
+        label.setText(name, juce::dontSendNotification);
+        label.setJustificationType(juce::Justification::centred);
+        label.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
+        label.setFont(juce::Font(13.0f, juce::Font::bold));
+        addAndMakeVisible(label);
+
+        slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 76, 20);
+        slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff84d8ff));
+        slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xff26323a));
+        slider.setColour(juce::Slider::thumbColourId, juce::Colour(0xffffd166));
+        slider.setColour(juce::Slider::textBoxTextColourId, juce::Colours::whitesmoke);
+        slider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colour(0xff12171b));
+        slider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff2f3a42));
+        addAndMakeVisible(slider);
+    }
+
+    void resized() override
+    {
+        auto area = getLocalBounds().reduced(4);
+        label.setBounds(area.removeFromTop(20));
+        slider.setBounds(area);
+    }
+
+private:
+    juce::Slider slider;
+    juce::Label label;
+    Attachment attachment;
+};
+
+class NickToneprintAudioProcessorEditor final : public juce::AudioProcessorEditor
+{
+public:
+    explicit NickToneprintAudioProcessorEditor(NickToneprintAudioProcessor& processor)
+        : AudioProcessorEditor(processor)
+    {
+        struct ParamSpec
+        {
+            const char* id;
+            const char* name;
+        };
+
+        constexpr std::array<ParamSpec, 17> specs {{
+            { "drive", "Drive" },
+            { "tone", "Tone" },
+            { "delay", "Slap" },
+            { "feedback", "Feedback" },
+            { "modDepth", "Drift" },
+            { "modRate", "Drift Rate" },
+            { "width", "Width" },
+            { "mix", "Mix" },
+            { "verbMix", "Verb Mix" },
+            { "verbDecay", "Decay" },
+            { "verbSize", "Size" },
+            { "verbDamping", "Damping" },
+            { "preDelay", "PreDelay" },
+            { "shimmer", "Shimmer" },
+            { "shimmerTone", "Shim Tone" },
+            { "driftSend", "Drift Send" },
+            { "output", "Output" },
+        }};
+
+        controls.reserve(specs.size());
+        for (const auto& spec : specs)
+        {
+            auto control = std::make_unique<KnobControl>(processor.getParameters(), spec.id, spec.name);
+            addAndMakeVisible(*control);
+            controls.push_back(std::move(control));
+        }
+
+        setSize(900, 390);
+    }
+
+    void paint(juce::Graphics& graphics) override
+    {
+        graphics.fillAll(juce::Colour(0xff0f1316));
+        graphics.setColour(juce::Colour(0xff84d8ff));
+        graphics.setFont(juce::Font(22.0f, juce::Font::bold));
+        graphics.drawText("Nick Toneprint", 18, 8, 260, 28, juce::Justification::centredLeft);
+
+        graphics.setColour(juce::Colour(0xff9aa7ad));
+        graphics.setFont(juce::Font(13.0f));
+        graphics.drawText("drift slap shimmer machine", 216, 12, 240, 22, juce::Justification::centredLeft);
+    }
+
+    void resized() override
+    {
+        auto area = getLocalBounds().reduced(18);
+        area.removeFromTop(42);
+
+        constexpr auto columns = 6;
+        const auto cellWidth = area.getWidth() / columns;
+        constexpr auto cellHeight = 104;
+
+        for (std::size_t index = 0; index < controls.size(); ++index)
+        {
+            const auto row = static_cast<int>(index) / columns;
+            const auto column = static_cast<int>(index) % columns;
+            controls[index]->setBounds(area.getX() + column * cellWidth,
+                                       area.getY() + row * cellHeight,
+                                       cellWidth,
+                                       cellHeight);
+        }
+    }
+
+private:
+    std::vector<std::unique_ptr<KnobControl>> controls;
+};
+
+juce::AudioProcessorEditor* NickToneprintAudioProcessor::createEditor()
+{
+    return new NickToneprintAudioProcessorEditor(*this);
+}
 } // namespace
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

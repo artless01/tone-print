@@ -21,6 +21,7 @@ target_sources(NickToneprint PRIVATE
 target_link_libraries(NickToneprint PRIVATE
     nick_toneprint_dsp
     juce::juce_audio_processors
+    juce::juce_gui_basics
     juce::juce_audio_utils
 )
 

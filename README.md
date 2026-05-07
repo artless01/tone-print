@@ -4,6 +4,8 @@ Nick Toneprint is a first-pass custom guitar/vocal/synth texture plugin. It comb
 
 Logic Pro loads Audio Unit plugins, so the macOS target is an AU `.component`. The same project can also build VST3 and a standalone app through JUCE.
 
+The plugin uses a compact fixed-size knob grid so all current controls are visible at once.
+
 ## Controls
 
 - Drive: input push into the soft saturation stage.
