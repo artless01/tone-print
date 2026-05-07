@@ -5,6 +5,93 @@
 
 namespace
 {
+struct PresetValue
+{
+    const char* id;
+    float value;
+};
+
+struct Preset
+{
+    const char* name;
+    const char* description;
+    std::array<PresetValue, 17> values;
+};
+
+const std::array<Preset, 6>& getPresets()
+{
+    static constexpr std::array<Preset, 6> presets {{
+        {
+            "Tape Ghost",
+            "Tight slap, mild drive, and low drift for always-on guitar or vocal thickening.",
+            {{
+                { "drive", 7.5f }, { "tone", 0.54f }, { "delay", 74.0f }, { "feedback", 0.16f },
+                { "modDepth", 1.8f }, { "modRate", 0.24f }, { "width", 0.92f }, { "mix", 0.28f },
+                { "verbMix", 0.10f }, { "verbDecay", 0.48f }, { "verbSize", 0.52f }, { "verbDamping", 0.58f },
+                { "preDelay", 18.0f }, { "shimmer", 0.0f }, { "shimmerTone", 0.50f }, { "driftSend", 0.35f },
+                { "output", -1.5f },
+            }},
+        },
+        {
+            "Oscillator Slap",
+            "The first magic zone: slow slap, around 30% feedback, and long drift movement.",
+            {{
+                { "drive", 10.0f }, { "tone", 0.60f }, { "delay", 118.0f }, { "feedback", 0.31f },
+                { "modDepth", 8.5f }, { "modRate", 0.08f }, { "width", 1.18f }, { "mix", 0.42f },
+                { "verbMix", 0.16f }, { "verbDecay", 0.62f }, { "verbSize", 0.74f }, { "verbDamping", 0.42f },
+                { "preDelay", 28.0f }, { "shimmer", 0.10f }, { "shimmerTone", 0.58f }, { "driftSend", 0.72f },
+                { "output", -2.0f },
+            }},
+        },
+        {
+            "Blue Drift",
+            "Wide drift feeding a long, soft shimmer wash for chords, swells, and ambient beds.",
+            {{
+                { "drive", 5.0f }, { "tone", 0.48f }, { "delay", 96.0f }, { "feedback", 0.22f },
+                { "modDepth", 6.8f }, { "modRate", 0.15f }, { "width", 1.28f }, { "mix", 0.50f },
+                { "verbMix", 0.58f }, { "verbDecay", 0.88f }, { "verbSize", 1.06f }, { "verbDamping", 0.55f },
+                { "preDelay", 42.0f }, { "shimmer", 0.42f }, { "shimmerTone", 0.70f }, { "driftSend", 0.86f },
+                { "output", -4.0f },
+            }},
+        },
+        {
+            "Vocal Mirage",
+            "Lower drive, wider modulation, and controlled bloom for a vocal double/dream smear.",
+            {{
+                { "drive", 4.0f }, { "tone", 0.57f }, { "delay", 64.0f }, { "feedback", 0.12f },
+                { "modDepth", 4.2f }, { "modRate", 0.31f }, { "width", 1.35f }, { "mix", 0.32f },
+                { "verbMix", 0.28f }, { "verbDecay", 0.72f }, { "verbSize", 0.82f }, { "verbDamping", 0.62f },
+                { "preDelay", 34.0f }, { "shimmer", 0.16f }, { "shimmerTone", 0.56f }, { "driftSend", 0.56f },
+                { "output", -2.0f },
+            }},
+        },
+        {
+            "DI Fever Dream",
+            "Hotter drive and unstable drift for leads, noise parts, and synth-like guitar lines.",
+            {{
+                { "drive", 17.0f }, { "tone", 0.68f }, { "delay", 142.0f }, { "feedback", 0.38f },
+                { "modDepth", 10.5f }, { "modRate", 0.21f }, { "width", 1.42f }, { "mix", 0.56f },
+                { "verbMix", 0.34f }, { "verbDecay", 0.78f }, { "verbSize", 0.92f }, { "verbDamping", 0.36f },
+                { "preDelay", 22.0f }, { "shimmer", 0.26f }, { "shimmerTone", 0.76f }, { "driftSend", 0.90f },
+                { "output", -5.0f },
+            }},
+        },
+        {
+            "Cloud Machine",
+            "Maximum bloom: big verb, clear shimmer, and enough drift send to turn notes into atmosphere.",
+            {{
+                { "drive", 6.0f }, { "tone", 0.46f }, { "delay", 132.0f }, { "feedback", 0.26f },
+                { "modDepth", 7.2f }, { "modRate", 0.11f }, { "width", 1.50f }, { "mix", 0.64f },
+                { "verbMix", 0.82f }, { "verbDecay", 0.94f }, { "verbSize", 1.22f }, { "verbDamping", 0.50f },
+                { "preDelay", 58.0f }, { "shimmer", 0.68f }, { "shimmerTone", 0.82f }, { "driftSend", 1.0f },
+                { "output", -6.0f },
+            }},
+        },
+    }};
+
+    return presets;
+}
+
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
@@ -60,6 +147,7 @@ public:
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
           parameters(*this, nullptr, "PARAMETERS", createParameterLayout())
     {
+        setCurrentProgram(0);
     }
 
     const juce::String getName() const override { return JucePlugin_Name; }
@@ -68,10 +156,28 @@ public:
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 8.0; }
 
-    int getNumPrograms() override { return 1; }
-    int getCurrentProgram() override { return 0; }
-    void setCurrentProgram(int) override {}
-    const juce::String getProgramName(int) override { return {}; }
+    int getNumPrograms() override { return static_cast<int>(getPresets().size()); }
+    int getCurrentProgram() override { return currentProgram; }
+    void setCurrentProgram(int index) override
+    {
+        const auto& presets = getPresets();
+        if (index < 0 || index >= static_cast<int>(presets.size()))
+            return;
+
+        currentProgram = index;
+        for (const auto& value : presets[static_cast<std::size_t>(index)].values)
+            if (auto* parameter = parameters.getParameter(value.id))
+                parameter->setValueNotifyingHost(parameter->convertTo0to1(value.value));
+    }
+
+    const juce::String getProgramName(int index) override
+    {
+        const auto& presets = getPresets();
+        if (index < 0 || index >= static_cast<int>(presets.size()))
+            return {};
+
+        return presets[static_cast<std::size_t>(index)].name;
+    }
     void changeProgramName(int, const juce::String&) override {}
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override
@@ -123,7 +229,15 @@ public:
     bool hasEditor() const override { return true; }
     juce::AudioProcessorEditor* createEditor() override;
 
-    juce::AudioProcessorValueTreeState& getParameters() { return parameters; }
+    juce::AudioProcessorValueTreeState& getParameterState() { return parameters; }
+    const char* getPresetDescription(int index) const
+    {
+        const auto& presets = getPresets();
+        if (index < 0 || index >= static_cast<int>(presets.size()))
+            return "";
+
+        return presets[static_cast<std::size_t>(index)].description;
+    }
 
     void getStateInformation(juce::MemoryBlock& destData) override
     {
@@ -141,6 +255,7 @@ public:
 private:
     toneprint::Processor dsp;
     juce::AudioProcessorValueTreeState parameters;
+    int currentProgram = 0;
 };
 
 class KnobControl final : public juce::Component
@@ -187,7 +302,8 @@ class NickToneprintAudioProcessorEditor final : public juce::AudioProcessorEdito
 {
 public:
     explicit NickToneprintAudioProcessorEditor(NickToneprintAudioProcessor& processor)
-        : AudioProcessorEditor(processor)
+        : AudioProcessorEditor(processor),
+          processorRef(processor)
     {
         struct ParamSpec
         {
@@ -218,12 +334,36 @@ public:
         controls.reserve(specs.size());
         for (const auto& spec : specs)
         {
-            auto control = std::make_unique<KnobControl>(processor.getParameters(), spec.id, spec.name);
+            auto control = std::make_unique<KnobControl>(processor.getParameterState(), spec.id, spec.name);
             addAndMakeVisible(*control);
             controls.push_back(std::move(control));
         }
 
-        setSize(900, 390);
+        presetLabel.setText("Preset", juce::dontSendNotification);
+        presetLabel.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
+        presetLabel.setFont(juce::Font(13.0f, juce::Font::bold));
+        addAndMakeVisible(presetLabel);
+
+        const auto& presets = getPresets();
+        for (std::size_t index = 0; index < presets.size(); ++index)
+            presetBox.addItem(presets[index].name, static_cast<int>(index) + 1);
+
+        presetBox.setSelectedId(processor.getCurrentProgram() + 1, juce::dontSendNotification);
+        presetBox.onChange = [this]
+        {
+            const auto selected = presetBox.getSelectedId() - 1;
+            processorRef.setCurrentProgram(selected);
+            updatePresetDescription();
+        };
+        addAndMakeVisible(presetBox);
+
+        presetDescription.setColour(juce::Label::textColourId, juce::Colour(0xffc8d1d5));
+        presetDescription.setFont(juce::Font(13.0f));
+        presetDescription.setJustificationType(juce::Justification::centredLeft);
+        addAndMakeVisible(presetDescription);
+        updatePresetDescription();
+
+        setSize(900, 450);
     }
 
     void paint(juce::Graphics& graphics) override
@@ -242,6 +382,11 @@ public:
     {
         auto area = getLocalBounds().reduced(18);
         area.removeFromTop(42);
+        auto presetArea = area.removeFromTop(42);
+        presetLabel.setBounds(presetArea.removeFromLeft(54));
+        presetBox.setBounds(presetArea.removeFromLeft(210).reduced(0, 4));
+        presetDescription.setBounds(presetArea.reduced(14, 0));
+        area.removeFromTop(8);
 
         constexpr auto columns = 6;
         const auto cellWidth = area.getWidth() / columns;
@@ -259,6 +404,16 @@ public:
     }
 
 private:
+    void updatePresetDescription()
+    {
+        presetDescription.setText(processorRef.getPresetDescription(presetBox.getSelectedId() - 1),
+                                  juce::dontSendNotification);
+    }
+
+    NickToneprintAudioProcessor& processorRef;
+    juce::Label presetLabel;
+    juce::ComboBox presetBox;
+    juce::Label presetDescription;
     std::vector<std::unique_ptr<KnobControl>> controls;
 };
 

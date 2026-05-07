@@ -26,6 +26,15 @@ The plugin uses a compact fixed-size knob grid so all current controls are visib
 - Drift Send: how much of the drift/slap path feeds the reverb.
 - Output: final level trim.
 
+## Presets
+
+- Tape Ghost: tight slap, mild drive, and low drift for always-on guitar or vocal thickening.
+- Oscillator Slap: the first magic zone; slow slap, around 30% feedback, and long drift movement.
+- Blue Drift: wide drift feeding a long, soft shimmer wash for chords, swells, and ambient beds.
+- Vocal Mirage: lower drive, wider modulation, and controlled bloom for a vocal double/dream smear.
+- DI Fever Dream: hotter drive and unstable drift for leads, noise parts, and synth-like guitar lines.
+- Cloud Machine: maximum bloom with big verb, clear shimmer, and enough drift send to turn notes into atmosphere.
+
 ## Local DSP Test
 
 ```bash
