@@ -23,6 +23,9 @@ struct Parameters
     float preDelayMs = 24.0f;
     float shimmer = 0.0f;
     float shimmerTone = 0.64f;
+    float afterimage = 0.0f;
+    float afterimageCapture = 0.45f;
+    float afterimageWarp = 0.38f;
     float driftSend = 0.65f;
     float outputDb = -1.5f;
 };
@@ -42,6 +45,9 @@ private:
     float processTone(int channel, float input);
     float readDelay(int channel, float delaySamples) const;
     float processReverb(int channel, float input);
+    float processShimmer(int channel, float input);
+    float processAfterimage(int channel, float input);
+    float readInterpolated(const std::vector<float>& line, float readPosition) const;
     float processComb(int lineIndex, float input, int delaySamples, float feedback, float damping);
     float processAllpass(int lineIndex, float input, int delaySamples);
     float readFromLine(const std::vector<float>& line, int writePosition, int delaySamples) const;
@@ -55,6 +61,16 @@ private:
     std::vector<float> toneState;
     std::vector<std::vector<float>> preDelayLines;
     std::vector<int> preDelayPositions;
+    std::vector<std::vector<float>> shimmerLines;
+    std::vector<int> shimmerPositions;
+    std::vector<float> shimmerPhases;
+    std::vector<std::vector<float>> afterimageLines;
+    std::vector<int> afterimagePositions;
+    std::vector<float> afterimagePhases;
+    std::vector<float> afterimageFastEnvelope;
+    std::vector<float> afterimageSlowEnvelope;
+    std::vector<float> afterimageHold;
+    std::vector<float> afterimageToneState;
     std::vector<std::vector<float>> combLines;
     std::vector<int> combPositions;
     std::vector<float> combDampingState;

@@ -15,7 +15,7 @@ struct Preset
 {
     const char* name;
     const char* description;
-    std::array<PresetValue, 17> values;
+    std::array<PresetValue, 20> values;
 };
 
 const std::array<Preset, 6>& getPresets()
@@ -29,6 +29,7 @@ const std::array<Preset, 6>& getPresets()
                 { "modDepth", 1.8f }, { "modRate", 0.24f }, { "width", 0.92f }, { "mix", 0.28f },
                 { "verbMix", 0.10f }, { "verbDecay", 0.48f }, { "verbSize", 0.52f }, { "verbDamping", 0.58f },
                 { "preDelay", 18.0f }, { "shimmer", 0.0f }, { "shimmerTone", 0.50f }, { "driftSend", 0.35f },
+                { "afterimage", 0.0f }, { "capture", 0.30f }, { "warp", 0.24f },
                 { "output", -1.5f },
             }},
         },
@@ -40,6 +41,7 @@ const std::array<Preset, 6>& getPresets()
                 { "modDepth", 8.5f }, { "modRate", 0.08f }, { "width", 1.18f }, { "mix", 0.42f },
                 { "verbMix", 0.16f }, { "verbDecay", 0.62f }, { "verbSize", 0.74f }, { "verbDamping", 0.42f },
                 { "preDelay", 28.0f }, { "shimmer", 0.10f }, { "shimmerTone", 0.58f }, { "driftSend", 0.72f },
+                { "afterimage", 0.24f }, { "capture", 0.52f }, { "warp", 0.46f },
                 { "output", -2.0f },
             }},
         },
@@ -51,6 +53,7 @@ const std::array<Preset, 6>& getPresets()
                 { "modDepth", 6.8f }, { "modRate", 0.15f }, { "width", 1.28f }, { "mix", 0.50f },
                 { "verbMix", 0.58f }, { "verbDecay", 0.88f }, { "verbSize", 1.06f }, { "verbDamping", 0.55f },
                 { "preDelay", 42.0f }, { "shimmer", 0.42f }, { "shimmerTone", 0.70f }, { "driftSend", 0.86f },
+                { "afterimage", 0.48f }, { "capture", 0.50f }, { "warp", 0.42f },
                 { "output", -4.0f },
             }},
         },
@@ -62,6 +65,7 @@ const std::array<Preset, 6>& getPresets()
                 { "modDepth", 4.2f }, { "modRate", 0.31f }, { "width", 1.35f }, { "mix", 0.32f },
                 { "verbMix", 0.28f }, { "verbDecay", 0.72f }, { "verbSize", 0.82f }, { "verbDamping", 0.62f },
                 { "preDelay", 34.0f }, { "shimmer", 0.16f }, { "shimmerTone", 0.56f }, { "driftSend", 0.56f },
+                { "afterimage", 0.34f }, { "capture", 0.40f }, { "warp", 0.31f },
                 { "output", -2.0f },
             }},
         },
@@ -73,17 +77,19 @@ const std::array<Preset, 6>& getPresets()
                 { "modDepth", 10.5f }, { "modRate", 0.21f }, { "width", 1.42f }, { "mix", 0.56f },
                 { "verbMix", 0.34f }, { "verbDecay", 0.78f }, { "verbSize", 0.92f }, { "verbDamping", 0.36f },
                 { "preDelay", 22.0f }, { "shimmer", 0.26f }, { "shimmerTone", 0.76f }, { "driftSend", 0.90f },
+                { "afterimage", 0.56f }, { "capture", 0.72f }, { "warp", 0.67f },
                 { "output", -5.0f },
             }},
         },
         {
             "Cloud Machine",
-            "Maximum bloom: big verb, clear shimmer, and enough drift send to turn notes into atmosphere.",
+            "Maximum bloom: big verb, clear shimmer, and afterimage memory turning notes into atmosphere.",
             {{
                 { "drive", 6.0f }, { "tone", 0.46f }, { "delay", 132.0f }, { "feedback", 0.26f },
                 { "modDepth", 7.2f }, { "modRate", 0.11f }, { "width", 1.50f }, { "mix", 0.64f },
                 { "verbMix", 0.82f }, { "verbDecay", 0.94f }, { "verbSize", 1.22f }, { "verbDamping", 0.50f },
                 { "preDelay", 58.0f }, { "shimmer", 0.68f }, { "shimmerTone", 0.82f }, { "driftSend", 1.0f },
+                { "afterimage", 0.72f }, { "capture", 0.58f }, { "warp", 0.55f },
                 { "output", -6.0f },
             }},
         },
@@ -130,6 +136,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         "shimmer", "Shimmer", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "shimmerTone", "Shimmer Tone", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.64f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "afterimage", "Afterimage", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "capture", "Capture", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.45f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "warp", "Warp", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.38f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "driftSend", "Drift Send", juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.65f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -219,6 +231,9 @@ public:
         values.preDelayMs = parameters.getRawParameterValue("preDelay")->load();
         values.shimmer = parameters.getRawParameterValue("shimmer")->load();
         values.shimmerTone = parameters.getRawParameterValue("shimmerTone")->load();
+        values.afterimage = parameters.getRawParameterValue("afterimage")->load();
+        values.afterimageCapture = parameters.getRawParameterValue("capture")->load();
+        values.afterimageWarp = parameters.getRawParameterValue("warp")->load();
         values.driftSend = parameters.getRawParameterValue("driftSend")->load();
         values.outputDb = parameters.getRawParameterValue("output")->load();
         dsp.setParameters(values);
@@ -311,7 +326,7 @@ public:
             const char* name;
         };
 
-        constexpr std::array<ParamSpec, 17> specs {{
+        constexpr std::array<ParamSpec, 20> specs {{
             { "drive", "Drive" },
             { "tone", "Tone" },
             { "delay", "Slap" },
@@ -327,6 +342,9 @@ public:
             { "preDelay", "PreDelay" },
             { "shimmer", "Shimmer" },
             { "shimmerTone", "Shim Tone" },
+            { "afterimage", "Afterimage" },
+            { "capture", "Capture" },
+            { "warp", "Warp" },
             { "driftSend", "Drift Send" },
             { "output", "Output" },
         }};
@@ -363,7 +381,7 @@ public:
         addAndMakeVisible(presetDescription);
         updatePresetDescription();
 
-        setSize(900, 450);
+        setSize(900, 540);
     }
 
     void paint(juce::Graphics& graphics) override
@@ -375,7 +393,7 @@ public:
 
         graphics.setColour(juce::Colour(0xff9aa7ad));
         graphics.setFont(juce::Font(13.0f));
-        graphics.drawText("drift slap shimmer machine", 216, 12, 240, 22, juce::Justification::centredLeft);
+        graphics.drawText("drift slap shimmer afterimage machine", 216, 12, 320, 22, juce::Justification::centredLeft);
     }
 
     void resized() override

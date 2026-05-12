@@ -15,6 +15,9 @@ int main()
     params.verbMix = 0.7f;
     params.verbDecay = 0.88f;
     params.shimmer = 0.55f;
+    params.afterimage = 0.35f;
+    params.afterimageCapture = 0.55f;
+    params.afterimageWarp = 0.48f;
     params.driftSend = 0.8f;
     processor.setParameters(params);
 
@@ -44,6 +47,88 @@ int main()
     if (peak <= 0.0f || peak > 2.0f || energy <= 0.0f)
     {
         std::cerr << "Unexpected output peak=" << peak << " energy=" << energy << '\n';
+        return 1;
+    }
+
+    toneprint::Processor dryShimmerProcessor;
+    toneprint::Processor wetShimmerProcessor;
+    dryShimmerProcessor.prepare(48000.0, 512, 2);
+    wetShimmerProcessor.prepare(48000.0, 512, 2);
+
+    params.shimmer = 0.0f;
+    dryShimmerProcessor.setParameters(params);
+    params.shimmer = 0.75f;
+    wetShimmerProcessor.setParameters(params);
+
+    std::vector<float> dryShimmerLeft(96000, 0.0f);
+    std::vector<float> dryShimmerRight(96000, 0.0f);
+    std::vector<float> wetShimmerLeft(96000, 0.0f);
+    std::vector<float> wetShimmerRight(96000, 0.0f);
+    dryShimmerLeft[0] = wetShimmerLeft[0] = 0.6f;
+    dryShimmerRight[0] = wetShimmerRight[0] = -0.4f;
+
+    float* dryShimmerChannels[] = { dryShimmerLeft.data(), dryShimmerRight.data() };
+    float* wetShimmerChannels[] = { wetShimmerLeft.data(), wetShimmerRight.data() };
+    dryShimmerProcessor.process(dryShimmerChannels, 2, static_cast<int>(dryShimmerLeft.size()));
+    wetShimmerProcessor.process(wetShimmerChannels, 2, static_cast<int>(wetShimmerLeft.size()));
+
+    auto shimmerDifference = 0.0f;
+    for (std::size_t i = 0; i < wetShimmerLeft.size(); ++i)
+    {
+        shimmerDifference += std::fabs(wetShimmerLeft[i] - dryShimmerLeft[i]);
+        shimmerDifference += std::fabs(wetShimmerRight[i] - dryShimmerRight[i]);
+    }
+
+    if (shimmerDifference <= 0.001f)
+    {
+        std::cerr << "Shimmer control did not change output. difference=" << shimmerDifference << '\n';
+        return 1;
+    }
+
+    toneprint::Processor dryAfterimageProcessor;
+    toneprint::Processor wetAfterimageProcessor;
+    dryAfterimageProcessor.prepare(48000.0, 512, 2);
+    wetAfterimageProcessor.prepare(48000.0, 512, 2);
+
+    params.shimmer = 0.25f;
+    params.verbMix = 0.8f;
+    params.afterimage = 0.0f;
+    dryAfterimageProcessor.setParameters(params);
+    params.afterimage = 0.85f;
+    params.afterimageCapture = 0.80f;
+    params.afterimageWarp = 0.72f;
+    wetAfterimageProcessor.setParameters(params);
+
+    std::vector<float> dryAfterimageLeft(96000, 0.0f);
+    std::vector<float> dryAfterimageRight(96000, 0.0f);
+    std::vector<float> wetAfterimageLeft(96000, 0.0f);
+    std::vector<float> wetAfterimageRight(96000, 0.0f);
+    for (std::size_t i = 0; i < 2400; ++i)
+    {
+        const auto sample = static_cast<float>(std::sin(static_cast<double>(i) * 0.065)) * 0.45f;
+        dryAfterimageLeft[i] = wetAfterimageLeft[i] = sample;
+        dryAfterimageRight[i] = wetAfterimageRight[i] = -sample * 0.7f;
+    }
+
+    float* dryAfterimageChannels[] = { dryAfterimageLeft.data(), dryAfterimageRight.data() };
+    float* wetAfterimageChannels[] = { wetAfterimageLeft.data(), wetAfterimageRight.data() };
+    dryAfterimageProcessor.process(dryAfterimageChannels, 2, static_cast<int>(dryAfterimageLeft.size()));
+    wetAfterimageProcessor.process(wetAfterimageChannels, 2, static_cast<int>(wetAfterimageLeft.size()));
+
+    auto afterimageTailEnergy = 0.0f;
+    auto dryTailEnergy = 0.0f;
+    for (std::size_t i = 24000; i < wetAfterimageLeft.size(); ++i)
+    {
+        afterimageTailEnergy += wetAfterimageLeft[i] * wetAfterimageLeft[i]
+            + wetAfterimageRight[i] * wetAfterimageRight[i];
+        dryTailEnergy += dryAfterimageLeft[i] * dryAfterimageLeft[i]
+            + dryAfterimageRight[i] * dryAfterimageRight[i];
+    }
+
+    if (afterimageTailEnergy <= dryTailEnergy * 1.05f)
+    {
+        std::cerr << "Afterimage did not increase tail energy. dry=" << dryTailEnergy
+                  << " wet=" << afterimageTailEnergy << '\n';
         return 1;
     }
 

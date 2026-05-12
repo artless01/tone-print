@@ -1,6 +1,6 @@
 # Nick Toneprint
 
-Nick Toneprint is a first-pass custom guitar/vocal/synth texture plugin. It combines soft drive, tone shaping, stereo width, and a short modulated slap delay into one simple effect.
+Nick Toneprint is a custom guitar/vocal/synth texture plugin. It combines soft drive, tone shaping, stereo width, a modulated slap, shimmer reverb, and an afterimage buffer that lets transients leave a pitch-warped halo behind them.
 
 Logic Pro loads Audio Unit plugins, so the macOS target is an AU `.component`. The same project can also build VST3 and a standalone app through JUCE.
 
@@ -23,6 +23,9 @@ The plugin uses a compact fixed-size knob grid so all current controls are visib
 - PreDelay: space before the reverb bloom arrives.
 - Shimmer: octave-like shimmer feed into the reverb tank.
 - Shimmer Tone: darker to brighter shimmer voice.
+- Afterimage: frozen memory halo feeding the bloom path.
+- Capture: how strongly transients imprint into the afterimage buffer.
+- Warp: pitch and timing instability of the afterimage layer.
 - Drift Send: how much of the drift/slap path feeds the reverb.
 - Output: final level trim.
 
@@ -33,7 +36,7 @@ The plugin uses a compact fixed-size knob grid so all current controls are visib
 - Blue Drift: wide drift feeding a long, soft shimmer wash for chords, swells, and ambient beds.
 - Vocal Mirage: lower drive, wider modulation, and controlled bloom for a vocal double/dream smear.
 - DI Fever Dream: hotter drive and unstable drift for leads, noise parts, and synth-like guitar lines.
-- Cloud Machine: maximum bloom with big verb, clear shimmer, and enough drift send to turn notes into atmosphere.
+- Cloud Machine: maximum bloom with big verb, clear shimmer, and afterimage memory turning notes into atmosphere.
 
 ## Local DSP Test
 
