@@ -132,6 +132,68 @@ int main()
         return 1;
     }
 
+    toneprint::Processor tajHallProcessor;
+    tajHallProcessor.prepare(48000.0, 512, 2);
+
+    toneprint::Parameters tajHall;
+    tajHall.driveDb = 3.5f;
+    tajHall.tone = 0.72f;
+    tajHall.delayMs = 48.0f;
+    tajHall.feedback = 0.08f;
+    tajHall.modDepthMs = 2.4f;
+    tajHall.modRateHz = 0.16f;
+    tajHall.width = 1.20f;
+    tajHall.mix = 0.54f;
+    tajHall.verbMix = 0.78f;
+    tajHall.verbDecay = 0.93f;
+    tajHall.verbSize = 1.18f;
+    tajHall.verbDamping = 0.40f;
+    tajHall.preDelayMs = 62.0f;
+    tajHall.shimmer = 0.0f;
+    tajHall.afterimage = 0.30f;
+    tajHall.afterimageCapture = 0.36f;
+    tajHall.afterimageWarp = 0.20f;
+    tajHall.driftSend = 0.92f;
+    tajHall.outputDb = -5.5f;
+    tajHallProcessor.setParameters(tajHall);
+
+    std::vector<float> tajLeft(192000, 0.0f);
+    std::vector<float> tajRight(192000, 0.0f);
+    for (std::size_t i = 0; i < 1800; ++i)
+    {
+        const auto envelope = 1.0f - static_cast<float>(i) / 1800.0f;
+        const auto note = std::sin(static_cast<double>(i) * 0.049) * 0.33f * envelope;
+        tajLeft[i] = note;
+        tajRight[i] = note * 0.92f;
+    }
+
+    float* tajChannels[] = { tajLeft.data(), tajRight.data() };
+    tajHallProcessor.process(tajChannels, 2, static_cast<int>(tajLeft.size()));
+
+    auto tajPeak = 0.0f;
+    auto tajLateTailEnergy = 0.0f;
+    for (std::size_t i = 0; i < tajLeft.size(); ++i)
+    {
+        if (!std::isfinite(tajLeft[i]) || !std::isfinite(tajRight[i]))
+        {
+            std::cerr << "Non-finite Taj Hall output at sample " << i << '\n';
+            return 1;
+        }
+
+        tajPeak = std::max(tajPeak, std::fabs(tajLeft[i]));
+        tajPeak = std::max(tajPeak, std::fabs(tajRight[i]));
+
+        if (i > 72000)
+            tajLateTailEnergy += tajLeft[i] * tajLeft[i] + tajRight[i] * tajRight[i];
+    }
+
+    if (tajPeak <= 0.0f || tajPeak > 1.5f || tajLateTailEnergy <= 0.0001f)
+    {
+        std::cerr << "Taj Hall preset lost the long reverb behavior. peak=" << tajPeak
+                  << " tail=" << tajLateTailEnergy << '\n';
+        return 1;
+    }
+
     std::cout << "DSP smoke test passed. peak=" << peak << " energy=" << energy << '\n';
     return 0;
 }

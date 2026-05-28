@@ -37,6 +37,16 @@ The plugin uses a compact fixed-size knob grid so all current controls are visib
 - Vocal Mirage: lower drive, wider modulation, and controlled bloom for a vocal double/dream smear.
 - DI Fever Dream: hotter drive and unstable drift for leads, noise parts, and synth-like guitar lines.
 - Cloud Machine: maximum bloom with big verb, clear shimmer, and afterimage memory turning notes into atmosphere.
+- Taj Hall DI: clean bright guitar into a long QuadraVerb-style hall with clear attack and slow note overlap.
+- Grace Rack Bloom: a slightly hotter rack-hall lead voice with more bite, smear, and width.
+
+## Jeff Buckley / QuadraVerb Tone Pass
+
+Start with `Taj Hall DI` for the clean "Hallelujah" direction: single-coil or hollowbody guitar, clean high-headroom amp/DI tone, and enough wet mix that notes overlap without swallowing the pick attack. `Grace Rack Bloom` is the livelier version for arpeggios, bends, and more driven parts.
+
+This is an inspired rack-hall approximation, not an exact Alesis QuadraVerb preset clone. The design target is the reported modified "Taj Mahal" QuadraVerb idea: bright clean input, long decay, wide predelayed bloom, very little shimmer, and subtle memory smear so dissonant notes hang underneath the next phrase.
+
+See [docs/jeff-buckley-quadraverb-tone.md](docs/jeff-buckley-quadraverb-tone.md) for the tone recipe and source notes.
 
 ## Local DSP Test
 

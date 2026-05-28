@@ -18,9 +18,9 @@ struct Preset
     std::array<PresetValue, 20> values;
 };
 
-const std::array<Preset, 6>& getPresets()
+const std::array<Preset, 8>& getPresets()
 {
-    static constexpr std::array<Preset, 6> presets {{
+    static constexpr std::array<Preset, 8> presets {{
         {
             "Tape Ghost",
             "Tight slap, mild drive, and low drift for always-on guitar or vocal thickening.",
@@ -91,6 +91,30 @@ const std::array<Preset, 6>& getPresets()
                 { "preDelay", 58.0f }, { "shimmer", 0.68f }, { "shimmerTone", 0.82f }, { "driftSend", 1.0f },
                 { "afterimage", 0.72f }, { "capture", 0.58f }, { "warp", 0.55f },
                 { "output", -6.0f },
+            }},
+        },
+        {
+            "Taj Hall DI",
+            "Clean bright guitar into a long QuadraVerb-style hall: clear attack, slow bloom, overlapping tails.",
+            {{
+                { "drive", 3.5f }, { "tone", 0.72f }, { "delay", 48.0f }, { "feedback", 0.08f },
+                { "modDepth", 2.4f }, { "modRate", 0.16f }, { "width", 1.20f }, { "mix", 0.54f },
+                { "verbMix", 0.78f }, { "verbDecay", 0.93f }, { "verbSize", 1.18f }, { "verbDamping", 0.40f },
+                { "preDelay", 62.0f }, { "shimmer", 0.0f }, { "shimmerTone", 0.52f }, { "driftSend", 0.92f },
+                { "afterimage", 0.30f }, { "capture", 0.36f }, { "warp", 0.20f },
+                { "output", -5.5f },
+            }},
+        },
+        {
+            "Grace Rack Bloom",
+            "A slightly hotter rack-hall lead voice with more bite and smear for arpeggios and vocal-like bends.",
+            {{
+                { "drive", 6.0f }, { "tone", 0.66f }, { "delay", 86.0f }, { "feedback", 0.17f },
+                { "modDepth", 3.8f }, { "modRate", 0.12f }, { "width", 1.32f }, { "mix", 0.48f },
+                { "verbMix", 0.70f }, { "verbDecay", 0.90f }, { "verbSize", 1.08f }, { "verbDamping", 0.46f },
+                { "preDelay", 44.0f }, { "shimmer", 0.08f }, { "shimmerTone", 0.54f }, { "driftSend", 0.88f },
+                { "afterimage", 0.44f }, { "capture", 0.44f }, { "warp", 0.30f },
+                { "output", -5.0f },
             }},
         },
     }};
@@ -393,7 +417,7 @@ public:
 
         graphics.setColour(juce::Colour(0xff9aa7ad));
         graphics.setFont(juce::Font(13.0f));
-        graphics.drawText("drift slap shimmer afterimage machine", 216, 12, 320, 22, juce::Justification::centredLeft);
+        graphics.drawText("drift slap shimmer afterimage rack-hall machine", 216, 12, 420, 22, juce::Justification::centredLeft);
     }
 
     void resized() override
